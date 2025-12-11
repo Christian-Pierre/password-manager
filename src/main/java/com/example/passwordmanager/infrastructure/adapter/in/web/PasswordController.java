@@ -30,7 +30,7 @@ public class PasswordController {
         this.getPasswordUseCase = getPasswordUseCase;
     }
 
-    @PostMapping
+    @PostMapping("/default")
     public PasswordEntry createDefault(@RequestParam(required = false) String description) {
         // Poderia chamar o use case com default (null) ou valores padrão
         return createPasswordUseCase.createPassword(description, null, null, null, null);

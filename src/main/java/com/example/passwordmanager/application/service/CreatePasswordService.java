@@ -7,20 +7,14 @@ import com.example.passwordmanager.domain.service.PasswordGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Implementação de caso de uso.
  *
- * Padrão: Application Service / Use Case
- * - Esta classe é uma implementação de uma porta de entrada do domínio.
- * - Ela coordena o fluxo:
- *     1) pede ao gerador de senha (núcleo) para criar uma senha
- *     2) cria a entidade de domínio PasswordEntry
- *     3) usa a porta de saída PasswordRepository para persistir
- *
- * Observação importante (proteção do core):
- *  - A regra de geração de senha NUNCA é chamada diretamente pelo controller.
- *  - O controller chama APENAS esta porta de entrada do domínio.
+ * Regras importantes:
+ * - Se numberOfCharacters for null => gera um tamanho aleatório entre 6 e 12.
+ * - Se numberOfCharacters for informado e < 4 => lança exceção.
  */
 public class CreatePasswordService implements CreatePasswordUseCase {
 
@@ -28,6 +22,8 @@ public class CreatePasswordService implements CreatePasswordUseCase {
     private final PasswordGenerator passwordGenerator;
 
     private static final int MIN_LENGTH = 4;
+    private static final int DEFAULT_MIN_LENGTH = 6;
+    private static final int DEFAULT_MAX_LENGTH = 12;
 
     public CreatePasswordService(PasswordRepository passwordRepository,
                                  PasswordGenerator passwordGenerator) {
@@ -42,10 +38,19 @@ public class CreatePasswordService implements CreatePasswordUseCase {
                                         Boolean useNumbers,
                                         Boolean useCapitalize) {
 
-        if (numberOfCharacters == null || numberOfCharacters < MIN_LENGTH) {
-                throw new IllegalArgumentException("O tamanho da senha deve ser de no mínimo " + MIN_LENGTH + " caracteres.");
+        // Regra 1: se não veio valor, escolhe aleatoriamente entre 6 e 12
+        if (numberOfCharacters == null) {
+            numberOfCharacters = ThreadLocalRandom.current()
+                    .nextInt(DEFAULT_MIN_LENGTH, DEFAULT_MAX_LENGTH + 1);
         }
-        
+
+        // Regra 2: se veio valor explícito < 4, rejeita
+        if (numberOfCharacters < MIN_LENGTH) {
+            throw new IllegalArgumentException(
+                    "O tamanho da senha deve ser de no mínimo " + MIN_LENGTH + " caracteres."
+            );
+        }
+
         // Toda chamada de geração de senha passa pelo core (PasswordGenerator)
         String generated = passwordGenerator.generateForRules(
                 numberOfCharacters,
