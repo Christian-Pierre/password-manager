@@ -1,5 +1,7 @@
 package com.example.passwordmanager.domain.service;
 
+import com.example.passwordmanager.domain.model.PasswordRules;
+
 /**
  * Serviço de domínio responsável por gerar senhas.
  *
@@ -20,8 +22,5 @@ public interface PasswordGenerator {
      * @param useCapitalize           se deve usar letras maiúsculas (A-Z)
      * @return senha gerada de acordo com as regras
      */
-    String generateForRules(Integer numberOfCharacters,
-                            Boolean useEspecialCharacters,
-                            Boolean useNumbers,
-                            Boolean useCapitalize);
+    String generate(PasswordRules rules);
 }
